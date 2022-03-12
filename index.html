@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>고양이 가라사대</title>
+  </head>
+  <style>
+    body {
+      text-align: center;
+    }
+    .main-card button {
+      position: relative;
+      left: -45px;
+      bottom: 15px;
+    }
+    .favorites {
+      list-style: none;
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+  </style>
+  <body>
+    <div id="app"></div>
+    <script
+      src="https://unpkg.com/react@17/umd/react.development.js"
+      crossorigin
+    ></script>
+    <script
+      src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"
+      crossorigin
+    ></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <script type="text/babel">
+      const jsonLocalStorage = {
+        setItem: (key, value) => {
+          localStorage.setItem(key, JSON.stringify(value));
+        },
+        getItem: (key) => {
+          return JSON.parse(localStorage.getItem(key));
+        },
+      };
+      const Title = (props) => {
+        return <h1>{props.children}</h1>;
+      };
+
+      // const a = () => {return()}
+      // const a = () => ()
+      // 이 둘은 같다.
+      const Form = ({ updateMainCat }) => {
+        // 한글이 포함되어있는지 판단하는 함수
+        const includesHangul = (text) => /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/i.test(text);
+        const [value, setValue] = React.useState("");
+        const [errorMessage, setErrorMessage] = React.useState("");
+
+        // 영어를 대문자로 보여주게 하는 함수
+        function handleInputChange(e) {
+          const userValue = e.target.value;
+          setErrorMessage("");
+          if (includesHangul(userValue)) {
+            setErrorMessage("한글은 입력할 수 없습니다.");
+          }
+          setValue(userValue.toUpperCase());
+        }
+
+        function handleFormSubmit(e) {
+          e.preventDefault();
+          setErrorMessage("");
+
+          if (value === "") {
+            setErrorMessage("빈 값으로 만들 수 없습니다.");
+            return;
+          }
+          updateMainCat();
+        }
+
+        return (
+          <form onSubmit={handleFormSubmit}>
+            <input
+              type="text"
+              name="name"
+              placeholder="영어 대사를 입력해주세요"
+              value={value}
+              onChange={handleInputChange}
+            />
+            <button type="submit">생성</button>
+            <p style={{ color: "red" }}>{errorMessage}</p>
+          </form>
+        );
+      };
+
+      // const catItem = (
+      //   <li>
+      //     <img src="https://cataas.com/cat/60b73094e04e18001194a309/says/react" />
+      //   </li>
+      // );
+
+      // 태그로 감싸면 (<a>hi</a>) porps의 key는 children
+      // 태그 안 속성으로 값을 주면 porps의 key는 속성
+      function CatItem(props) {
+        return (
+          <li>
+            <img src={props.img} style={{ width: "150px" }} />
+          </li>
+        );
+      }
+
+      // 중괄호 안에는 표현식(값을 리턴하는 것)을 써야 한다.
+      // const favorites = (
+      //   <ul className="favorites">
+      //     <CatItem img="https://cataas.com//cat/5e9970351b7a400011744233/says/inflearn" />
+      //     <CatItem img="https://cataas.com/cat/595f280b557291a9750ebf65/says/JavaScript" />
+      //   </ul>
+      // );
+
+      function Favorites({ favorites }) {
+        return (
+          <ul className="favorites">
+            {favorites.map((cat) => (
+              <CatItem img={cat} key={cat} />
+            ))}
+          </ul>
+        );
+      }
+      // const MainCard = (props) => {}를 활용해 <img src={props.img}/> 로 나타낼 수 있으나
+      // ES6 문법 [구조 분해 문법(Destructuring)(디스트럭처링 문법)]을 활용해 const Main = ({img}) => {}로 <img src={img}/>로 나타낼 수 있다
+
+      const MainCard = ({ img, onHeartClick }) => {
+        return (
+          <div className="main-card">
+            <img src={img} alt="고양이" width="400" />
+            <button onClick={onHeartClick}>🤍</button>
+          </div>
+        );
+      };
+
+      // const MainCard = (props) => {
+      //   function handleHeartClick() {
+      //     console.log("하트 눌렀음");
+      //   }
+      //   function handleHeartMouseOver() {
+      //     console.log("하트 스쳐 지나감");
+      //   }
+      //   return (
+      //     <div className="main-card">
+      //       <img src={props.img} alt="고양이" width="400" />
+      //       <button
+      //         onClick={handleHeartClick}
+      //         onMouseOver={handleHeartMouseOver}
+      //       >
+      //         🤍
+      //       </button>
+      //     </div>
+      //   );
+      // };
+
+      const App = () => {
+        // 구조분해할당
+        const [counter, setCounter] = React.useState(
+          // localStorage에서 값을 string으로 저장하기 때문에
+          jsonLocalStorage.getItem("counter")
+        );
+        // const counterState = React.useState(1);
+        // const counter = counterState[0];
+        // const setCounter = counterState[1];
+
+        const CAT1 =
+          "https://cataas.com/cat/60b73094e04e18001194a309/says/react";
+        const CAT2 =
+          "https://cataas.com//cat/5e9970351b7a400011744233/says/inflearn";
+        const CAT3 =
+          "https://cataas.com/cat/595f280b557291a9750ebf65/says/JavaScript";
+        const [mainCat, setMainCat] = React.useState(CAT1);
+
+        const [favorites, setFavorites] = React.useState(
+          // 앞의 값이 null이면 []를 써라
+          jsonLocalStorage.getItem("favorites") || []
+        );
+
+        // counter는 현재 값
+        // setCounter는 counter에 변화를 주는 함수
+
+        function updateMainCat() {
+          // counter가 클로저라 계속 값이 기억
+          setMainCat(CAT2);
+          const nextCounter = counter + 1;
+          setCounter(nextCounter);
+          jsonLocalStorage.setItem("counter", nextCounter);
+        }
+
+        function handleHeartClick() {
+          const nextFavorites = [...favorites, mainCat];
+          setFavorites(nextFavorites);
+          jsonLocalStorage.setItem("favorites", nextFavorites);
+        }
+
+        return (
+          // 최상위 태그가 1개여야 한다.
+          // 따라서 div를 넣어준다.
+          // 이벤트 핸들러 이름을 지을 때 handle을 앞에 붙이고
+          // 만약 prop으로 넘기면 handle 대신 on을 붙여준다.
+          <div>
+            <Title> {counter}번째 고양이 가라사사대 </Title>
+            <Form updateMainCat={updateMainCat} />
+            <MainCard img={mainCat} onHeartClick={handleHeartClick} />
+            <Favorites favorites={favorites} />
+          </div>
+        );
+      };
+
+      const 여기다가그려 = document.querySelector("#app");
+
+      ReactDOM.render(<App />, 여기다가그려);
+    </script>
+    <!-- 오류 정리
+    1. class를 className으로 입력하기
+    2. 컴포넌트는 언제나 첫글자를 대문자로 짓는다. 
+    3. 컴포넌트 return 후 괄호()를 넣는다.
+    5. 컴포넌트는 태그 형태로 입력한다. <~~~/>
+    6. map 오류
+    Warning: Each child in a list should have a unique "key" prop.
+    배열 순회를 할 때 배열마다 id 값이 필요하다. 그래야 최적화해서 잘 보여줄 수 있다는 말
+   그래서 key={}로 id값을 부여한다.-->
+
+    <!-- Q & A 정리
+      1. 엘리먼트와 컴포넌트를 정리하자
+      2. state와 props 정리
+     -->
+
+    <!-- 개념정리
+      1. 상태 끌어올리기(lifting state up)
+          자식 컴포넌트에서만 쓰이는 상태를 상위 컴포넌트에서 쓰고 싶을 때
+          그 상태를 위로 끌어올리게 된다.
+      2. map
+        순회할 때 사용하는 메서드
+        ~~.map(변수 => (함수, 변환 등등 바꿈) ex) <~~~ img+{변수} key={?}) />)
+      3. 스프레드 오퍼레이터 문법
+    -->
+
+    <!-- 배운내용정리
+      1. useState
+      const [counter, setCounter] = React.useState(); 이게 원형
+      여러개를 써도 상관없음
+      props로 내려줄 때 counter와 setCounter가 떨어져 있어도 OK
+    -->
+  </body>
+</html>
