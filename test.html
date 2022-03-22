@@ -34,6 +34,70 @@
       const 여기다가그려 = document.querySelector("#app");
 
       ReactDOM.render(<App />, 여기다가그려);
+
+      // 배운 내용 전체 정리
+      // JSX = javascript + XML
+      // html 태그 안에서 중괄호{}를 사용해서 JS를 쓸 수 있다.
+      // const count = 1;
+      // const title = <h1>{count}번째 고양이</h1>
+      // title 변수에 담은 h1태그는 '리액트 엘리먼트'라고 부른다.
+
+      // Babel
+      // 최신 문법을 브라우저가 이해할 수 있는 JavaScript로 통역
+      // 브라우저는 JSX를 이해하지 못하기 때문에 Babel이 통역해준다.
+
+      // 컴포넌트
+      // 재사용 가능한 UI 코드 조각
+
+      // 스타일링 : 리액트에 css 끼얹기
+      // css 글래스: className
+      // 인라인 스타일링: style = {{스타일 속성; 스타일 값}}
+      // ex <div style={{color:'red'}}>위험</div> 이때 red를 string으로 넘긴다.
+
+      // 이벤트
+      // 사용자 이벤트(클릭, 스크롤 등) 다루기
+      // 일반 자바스크립트 이벤트 목록과 동일하지만 중간을 대문자로 쓰면 된다.
+      // ex. onclick -> onCllick , onsubmit -> onSubmit
+
+      // 상태
+      // 컴포넌트 안에서 자유롭게 변경할 값이 필요할 때 사용
+      // useState함수로 상태를 추가할 수 있다.
+      // const [상태명, 상태변경함수명] = React.useState(초기값);
+      // 컴포넌트 안에서 만들 수 있다.
+      // ex.
+      // const [counter, setCounter] = React.useState(1);
+      // function counterUp() {
+      //  setCounter(counter + 1);
+      //}
+      // return <button onClick={counterUp}>카운터는{counter}</button>
+
+      // 리스트
+      // 배열로 반복되는 UI 그리기
+      // 배열에서 map을 사용해 순회하면서 리액트 UI를 반환한다.
+      // ex. const favorites = ['이미지1', '이미지2', '이미지3']
+      //<ul>
+      // {favorites.map(image => <img src={image}</img>)}
+      //</ul>
+
+      // 폼 (form)
+      // 사용자 입력 다루기
+      // 사용자 입력값을 직접 다루기 위해 value를 상태로 관리한다
+      // 우리는 상태를 추가해서 value를 관리했다.
+      // ex.
+      // const [value, setValue] = React.useState('초기값이다')
+      // function onValueChange(e) {
+      // setValue(e.target.value);
+      //}
+      //<form onSubmit={handleSubmit}>
+      //<input value={value} onChange={onValueChange}/>
+      //<button type = "submit">제출</button>
+      //</form>
+
+      // 로컬스토리지 (브라우저 기능)
+      // 브라우저에 데이터 저장하기
+      // 간단한 데이터 저장이 필요할 땐 localStorage를 쓴다.
+      // localStorage.setItem('이름', '유림')
+      // localStorage.getItem('이름') // 유림
     </script>
   </body>
 </html>

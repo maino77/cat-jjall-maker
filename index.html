@@ -25,6 +25,7 @@
   </style>
   <body>
     <div id="app"></div>
+
     <script
       src="https://unpkg.com/react@17/umd/react.development.js"
       crossorigin
@@ -43,20 +44,25 @@
           return JSON.parse(localStorage.getItem(key));
         },
       };
+
+      const fetchCat = async (text) => {
+        const OPEN_API_DOMAIN = "https://cataas.com";
+        const response = await fetch(
+          `${OPEN_API_DOMAIN}/cat/says/${text}?json=true`
+        );
+        const responseJson = await response.json();
+        return `${OPEN_API_DOMAIN}/${responseJson.url}`;
+      };
+
       const Title = (props) => {
         return <h1>{props.children}</h1>;
       };
 
-      // const a = () => {return()}
-      // const a = () => ()
-      // 이 둘은 같다.
       const Form = ({ updateMainCat }) => {
-        // 한글이 포함되어있는지 판단하는 함수
         const includesHangul = (text) => /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/i.test(text);
         const [value, setValue] = React.useState("");
         const [errorMessage, setErrorMessage] = React.useState("");
 
-        // 영어를 대문자로 보여주게 하는 함수
         function handleInputChange(e) {
           const userValue = e.target.value;
           setErrorMessage("");
@@ -74,7 +80,7 @@
             setErrorMessage("빈 값으로 만들 수 없습니다.");
             return;
           }
-          updateMainCat();
+          updateMainCat(value);
         }
 
         return (
@@ -92,14 +98,6 @@
         );
       };
 
-      // const catItem = (
-      //   <li>
-      //     <img src="https://cataas.com/cat/60b73094e04e18001194a309/says/react" />
-      //   </li>
-      // );
-
-      // 태그로 감싸면 (<a>hi</a>) porps의 key는 children
-      // 태그 안 속성으로 값을 주면 porps의 key는 속성
       function CatItem(props) {
         return (
           <li>
@@ -108,15 +106,11 @@
         );
       }
 
-      // 중괄호 안에는 표현식(값을 리턴하는 것)을 써야 한다.
-      // const favorites = (
-      //   <ul className="favorites">
-      //     <CatItem img="https://cataas.com//cat/5e9970351b7a400011744233/says/inflearn" />
-      //     <CatItem img="https://cataas.com/cat/595f280b557291a9750ebf65/says/JavaScript" />
-      //   </ul>
-      // );
-
       function Favorites({ favorites }) {
+        if (favorites.length === 0) {
+          return <div>사진 위 하트를 눌러 고양이 사진을 저장해봐요!</div>;
+        }
+
         return (
           <ul className="favorites">
             {favorites.map((cat) => (
@@ -125,70 +119,55 @@
           </ul>
         );
       }
-      // const MainCard = (props) => {}를 활용해 <img src={props.img}/> 로 나타낼 수 있으나
-      // ES6 문법 [구조 분해 문법(Destructuring)(디스트럭처링 문법)]을 활용해 const Main = ({img}) => {}로 <img src={img}/>로 나타낼 수 있다
 
-      const MainCard = ({ img, onHeartClick }) => {
+      const MainCard = ({ img, onHeartClick, alreadyFavorite }) => {
+        const heartIcon = alreadyFavorite ? "💖" : "🤍";
         return (
           <div className="main-card">
             <img src={img} alt="고양이" width="400" />
-            <button onClick={onHeartClick}>🤍</button>
+            <button onClick={onHeartClick}>{heartIcon}</button>
           </div>
         );
       };
 
-      // const MainCard = (props) => {
-      //   function handleHeartClick() {
-      //     console.log("하트 눌렀음");
-      //   }
-      //   function handleHeartMouseOver() {
-      //     console.log("하트 스쳐 지나감");
-      //   }
-      //   return (
-      //     <div className="main-card">
-      //       <img src={props.img} alt="고양이" width="400" />
-      //       <button
-      //         onClick={handleHeartClick}
-      //         onMouseOver={handleHeartMouseOver}
-      //       >
-      //         🤍
-      //       </button>
-      //     </div>
-      //   );
-      // };
-
       const App = () => {
-        // 구조분해할당
-        const [counter, setCounter] = React.useState(
-          // localStorage에서 값을 string으로 저장하기 때문에
-          jsonLocalStorage.getItem("counter")
-        );
-        // const counterState = React.useState(1);
-        // const counter = counterState[0];
-        // const setCounter = counterState[1];
-
         const CAT1 =
           "https://cataas.com/cat/60b73094e04e18001194a309/says/react";
         const CAT2 =
           "https://cataas.com//cat/5e9970351b7a400011744233/says/inflearn";
         const CAT3 =
           "https://cataas.com/cat/595f280b557291a9750ebf65/says/JavaScript";
+
+        const [counter, setCounter] = React.useState(() => {
+          return jsonLocalStorage.getItem("counter");
+        });
         const [mainCat, setMainCat] = React.useState(CAT1);
+        const [favorites, setFavorites] = React.useState(() => {
+          return jsonLocalStorage.getItem("favorites") || [];
+        });
 
-        const [favorites, setFavorites] = React.useState(
-          // 앞의 값이 null이면 []를 써라
-          jsonLocalStorage.getItem("favorites") || []
-        );
+        const alreadyFavorite = favorites.includes(mainCat);
 
-        // counter는 현재 값
-        // setCounter는 counter에 변화를 주는 함수
+        async function setInitialCat() {
+          const newCat = await fetchCat("First cat");
+          console.log(newCat);
+          setMainCat(newCat);
+        }
 
-        function updateMainCat() {
-          // counter가 클로저라 계속 값이 기억
-          setMainCat(CAT2);
-          const nextCounter = counter + 1;
-          setCounter(nextCounter);
-          jsonLocalStorage.setItem("counter", nextCounter);
+        React.useEffect(() => {
+          setInitialCat();
+        }, []);
+
+        async function updateMainCat(value) {
+          const newCat = await fetchCat(value);
+
+          setMainCat(newCat);
+
+          setCounter((prev) => {
+            const nextCounter = prev + 1;
+            jsonLocalStorage.setItem("counter", nextCounter);
+            return nextCounter;
+          });
         }
 
         function handleHeartClick() {
@@ -197,15 +176,17 @@
           jsonLocalStorage.setItem("favorites", nextFavorites);
         }
 
+        const counterTitle = counter === null ? "" : counter + "번째 ";
+
         return (
-          // 최상위 태그가 1개여야 한다.
-          // 따라서 div를 넣어준다.
-          // 이벤트 핸들러 이름을 지을 때 handle을 앞에 붙이고
-          // 만약 prop으로 넘기면 handle 대신 on을 붙여준다.
           <div>
-            <Title> {counter}번째 고양이 가라사사대 </Title>
+            <Title>{counterTitle}고양이 가라사대</Title>
             <Form updateMainCat={updateMainCat} />
-            <MainCard img={mainCat} onHeartClick={handleHeartClick} />
+            <MainCard
+              img={mainCat}
+              onHeartClick={handleHeartClick}
+              alreadyFavorite={alreadyFavorite}
+            />
             <Favorites favorites={favorites} />
           </div>
         );
